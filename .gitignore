@@ -1,0 +1,9 @@
+.DS_Store
+.project
+.settings
+.idea
+.vscode
+.svn
+*.swap
+vendor
+composer.lock
