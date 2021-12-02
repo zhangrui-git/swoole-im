@@ -32,9 +32,6 @@ class TextMsg extends Service
     {
         $ws = $this->server->ws;
         $ssidTable = $this->server->ssidTable;
-        $log = $this->server->log;
-        $log->debug('message ', [json_encode($msg)]);
-        $log->debug("ssid=$ssid content=$content");
         $toFd = $ssidTable->get($ssid, 'fd');
         $sendTo = new SendTo();
         $sendTo->setForm($msg->ssid)->setContent($content);
