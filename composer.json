@@ -10,7 +10,6 @@
     ],
     "require": {
         "symfony/console": "^5.3",
-        "swoole/ide-helper": "^4.8",
         "monolog/monolog": "^2.3"
     },
     "autoload": {
@@ -20,5 +19,8 @@
             "service\\": "service",
             "response\\": "response"
         }
+    },
+    "require-dev": {
+        "swoole/ide-helper": "^4.8"
     }
 }
