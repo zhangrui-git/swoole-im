@@ -1,0 +1,21 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+require __DIR__.'/vendor/autoload.php';
+
+use command\TestCommand;
+use command\WSServerCommand;
+use Symfony\Component\Console\Application;
+use Symfony\Component\Console\Input\ArgvInput;
+use Symfony\Component\Console\Output\ConsoleOutput;
+
+$app = new Application('im', '0.0.1');
+$app->add(new WSServerCommand());
+$app->add(new TestCommand());
+try {
+    $app->run(new ArgvInput(), new ConsoleOutput());
+} catch (Exception $e) {
+    printf('%s', $e->getMessage());
+}
