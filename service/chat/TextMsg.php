@@ -32,10 +32,16 @@ class TextMsg extends Service
     {
         $ws = $this->server->ws;
         $ssidTable = $this->server->ssidTable;
+        $log = $this->server->log;
         $toFd = $ssidTable->get($ssid, 'fd');
-        $sendTo = new SendTo();
-        $sendTo->setForm($msg->ssid)->setContent($content);
-        $ws->push($toFd, strval($sendTo));
+        if ($toFd !== false) {
+            $sendTo = new SendTo();
+            $sendTo->setForm($msg->ssid)->setContent($content);
+            $ws->push($toFd, strval($sendTo));
+        } else {
+            $log->debug('offline', ['ssid' => $ssid]);
+        }
+
         return null;
     }
 }
