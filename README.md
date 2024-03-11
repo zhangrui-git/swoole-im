@@ -18,14 +18,15 @@ LABEL authors="Zhang Rui"
 COPY --from=composer /usr/bin/composer /usr/bin/composer
 ADD . /app/
 WORKDIR /app/
-RUN composer require
+RUN composer install
+EXPOSE 8080/tcp
 ENTRYPOINT ["php", "im", "server"]
 ```
 ```shell
 docker build . -t swoole-im
 ```
 #### 3.连接服务器
-> 使用postman连接服务器 ws://127.0.0.1:端口
+> 使用postman连接服务器 ws://127.0.0.1:8080
 
 客户端A连接成功返回json
 ```json
