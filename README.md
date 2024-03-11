@@ -1,11 +1,28 @@
 #### 1.拉取代码
-```shell script
-git clone https://gitee.com/zhangrui-git/im.git
-composer install
+```shell
+git clone https://gitee.com/zhangrui-git/swoole-im.git
+cd swoole-im
 ```
 #### 2.运行服务端
-```shell script
+手动运行
+```shell
+composer install
 php im server
+```
+docker运行
+```dockerfile
+FROM composer/composer as composer
+ONBUILD RUN install
+FROM phpswoole/swoole:4.8-php7.4-alpine
+LABEL authors="Zhang Rui"
+COPY --from=composer /usr/bin/composer /usr/bin/composer
+ADD . /app/
+WORKDIR /app/
+RUN composer require
+ENTRYPOINT ["php", "im", "server"]
+```
+```shell
+docker build . -t swoole-im
 ```
 #### 3.连接服务器
 > 使用postman连接服务器 ws://127.0.0.1:端口
