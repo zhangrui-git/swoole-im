@@ -9,11 +9,14 @@ declare(strict_types=1);
 namespace command;
 
 
-use core\Dispatch;
-use core\WebSocketServer;
+use core\server\WebSocketServer;
+use Exception;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
-use service\chat\TextMsg;
+use packages\JsonDecoder;
+use packages\JsonEncoder;
+use service\chat\SingleChatText;
+use service\echos\Echos;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -34,9 +37,9 @@ class WSServerCommand extends Command
      * @param InputInterface $input
      * @param OutputInterface $output
      * @return int
-     * @throws \Exception
+     * @throws Exception
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->start($input, $output);
         return Command::SUCCESS;
@@ -45,17 +48,18 @@ class WSServerCommand extends Command
     /**
      * @param InputInterface $input
      * @param OutputInterface $output
-     * @throws \Exception
+     * @throws Exception
      */
     protected function start(InputInterface $input, OutputInterface $output)
     {
         $log = new Logger('socket_server');
         $log->pushHandler(new StreamHandler('php://stdout', Logger::DEBUG));
-        $server = new WebSocketServer('0.0.0.0', 80);
+        $server = new WebSocketServer('0.0.0.0', 8080);
+        $server->addService(new SingleChatText($server));
+        $server->addService(new Echos($server));
         $server->setLogger($log);
-        $dispatch = new Dispatch();
-        $dispatch->addService(new TextMsg($server));
-        $server->setDispatch($dispatch);
+        $server->setDecoder(new JsonDecoder());
+        $server->setEncoder(new JsonEncoder());
         $server->start();
     }
 }

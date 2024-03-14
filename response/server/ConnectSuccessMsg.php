@@ -9,12 +9,15 @@ declare(strict_types=1);
 namespace response\server;
 
 
-use core\Response;
+use packages\WebSocketResponse;
 
-class ConnectSuccess extends Response
+class ConnectSuccessMsg extends WebSocketResponse
 {
-    public string $major = 'Server';
-    public string $minor = 'Conn';
+    protected int $version = 1;
+
+    protected string $service = 'system';
+
+    protected string $module = 'UserLogin';
 
     public function setSsid(string $ssid): self
     {

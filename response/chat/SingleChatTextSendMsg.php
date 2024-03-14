@@ -9,16 +9,19 @@ declare(strict_types=1);
 namespace response\chat;
 
 
-use core\Response;
+use packages\WebSocketResponse;
 
-class SendTo extends Response
+class SingleChatTextSendMsg extends WebSocketResponse
 {
-    protected string $major = 'chat';
-    protected string $minor = 'textMsg';
+    protected int $version = 1;
 
-    public function setForm(string $ssid): self
+    protected string $service = 'chat';
+
+    protected string $module = 'SingleChatText';
+
+    public function setFromSsid(string $ssid): self
     {
-        $this->data['form'] = $ssid;
+        $this->data['formSsid'] = $ssid;
         return $this;
     }
 

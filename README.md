@@ -12,18 +12,16 @@ php im server
 docker运行
 ```dockerfile
 FROM composer/composer as composer
-ONBUILD RUN install
 FROM phpswoole/swoole:4.8-php7.4-alpine
 LABEL authors="Zhang Rui"
 COPY --from=composer /usr/bin/composer /usr/bin/composer
-ADD . /app/
-WORKDIR /app/
-RUN composer install
 EXPOSE 8080/tcp
+VOLUME /app
+WORKDIR /app
 ENTRYPOINT ["php", "im", "server"]
 ```
 ```shell
-docker build . -t swoole-im
+docker run -p 8080:8080 -v $project_dir:/app --name swoole-im swoole-im:0.0.1
 ```
 #### 3.连接服务器
 > 使用postman连接服务器 ws://127.0.0.1:8080
@@ -31,33 +29,25 @@ docker build . -t swoole-im
 客户端A连接成功返回json
 ```json
 {
-    "version": "0.0.1",
-    "status": 200,
-    "msg": "",
-    "timestamp": 1638436708,
-    "data": {
-        "Server": {
-            "Conn": {
-                "ssid": "8367abf5ff6389cf4de8b0986aabe413"
-            }
-        }
-    }
+  "serviceName": "system.UserLogin",
+  "retStat": 0,
+  "retMsg": "",
+  "msg": {
+    "ssid": "40713e48251bd9216a62ef655942107a"
+  },
+  "time": 1710420856
 }
 ```
 客户端B连接成功返回json
 ```json
 {
-    "version": "0.0.1",
-    "status": 200,
-    "msg": "",
-    "timestamp": 1638436711,
-    "data": {
-        "Server": {
-            "Conn": {
-                "ssid": "15d93d4a2c1f37f6cee7cfcd65643b09"
-            }
-        }
-    }
+  "msg": {
+    "ssid": "c0f56feef9e72e39b840421f15708595"
+  },
+  "time": 1710420843,
+  "serviceName": "system.UserLogin",
+  "retStat": 0,
+  "retMsg": ""
 }
 ```
 #### 4.发送消息
@@ -65,14 +55,36 @@ docker build . -t swoole-im
 
 ```json
 {
-    "type": "chat",
-    "data": {
-        "module": "text",
-        "method": "sendTo",
-        "params": {
-            "ssid": "15d93d4a2c1f37f6cee7cfcd65643b09",
-            "content": "hello world"
-        }
-    }
+  "ver": "0.0.1",
+  "serviceName": "chat.SingleChatText",
+  "msg": {
+    "toSsid": "c0f56feef9e72e39b840421f15708595",
+    "content": "hi"
+  }
+}
+```
+> 客户端A收到回复
+
+```json
+{
+    "msg": {},
+    "time": 1710421158,
+    "serviceName": "chat.SingleChatText",
+    "retStat": 0,
+    "retMsg": "ok"
+}
+```
+> 客户端B收到消息
+
+```json
+{
+    "msg": {
+        "formSsid": "40713e48251bd9216a62ef655942107a",
+        "content": "hi"
+    },
+    "time": 1710420901,
+    "serviceName": "chat.SingleChatText",
+    "retStat": 0,
+    "retMsg": ""
 }
 ```
