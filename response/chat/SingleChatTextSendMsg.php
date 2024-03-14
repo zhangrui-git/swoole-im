@@ -3,7 +3,7 @@
 declare(strict_types=1);
 /**
  * @author zhang rui<zhangruirui@zhangruirui.com>
- * @see https://github.com/zhangrui-git/im.git/
+ * @see https://github.com/zhangrui-git/swoole-im.git
  */
 
 namespace response\chat;
