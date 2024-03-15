@@ -20,6 +20,7 @@ use service\echos\Echos;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use task\Broadcast;
 
 /**
  * websocket服务管理命令
@@ -57,6 +58,7 @@ class WSServerCommand extends Command
         $server = new WebSocketServer('0.0.0.0', 8080);
         $server->addService(new SingleChatText($server));
         $server->addService(new Echos($server));
+        $server->addTask(new Broadcast($server));
         $server->setLogger($log);
         $server->setDecoder(new JsonDecoder());
         $server->setEncoder(new JsonEncoder());

@@ -15,6 +15,7 @@ use core\service\ServiceInterface;
 use core\session\FdTable;
 use core\session\Session;
 use core\session\SsidTable;
+use core\task\WorkerTaskInterface;
 use Exception;
 use packages\ResponsePackageInterface;
 use packages\WebSocketRequest;
@@ -34,6 +35,8 @@ class WebSocketServer implements ServerInterface
     public Session $session;
     /** @var ServiceInterface[][] */
     protected array $services = [];
+    /** @var WorkerTaskInterface[] */
+    protected array $workerTasks = [];
     protected EncoderInterface $encoder;
     protected DecoderInterface $decoder;
 
@@ -50,6 +53,10 @@ class WebSocketServer implements ServerInterface
         $this->ws->on('open', [$this, 'onOpen']);
         $this->ws->on('message', [$this, 'onMessage']);
         $this->ws->on('close', [$this, 'onClose']);
+        // 初始化异步任务
+        $this->ws->on('task', [$this, 'onTask']);
+        $this->ws->on('finish', [$this, 'onFinish']);
+        $this->ws->set(['task_worker_num' => 4]);
         // 初始化内存表
         $this->session = new Session();
     }
@@ -71,6 +78,12 @@ class WebSocketServer implements ServerInterface
             throw new Exception();
         }
         $this->services[$s][$m] = $service;
+        return $this;
+    }
+
+    public function addTask(WorkerTaskInterface $task): self
+    {
+        $this->workerTasks[$task->getTaskName()] = $task;
         return $this;
     }
 
@@ -122,7 +135,7 @@ class WebSocketServer implements ServerInterface
                     $mod = $pkg->getModule();
                     if (isset($this->services[$srv][$mod])) {
                         $service = $this->services[$srv][$mod];
-                        $this->log->info('handle at', ['service' => $srv, 'module' => $mod]);
+                        $this->log->info('handle on', ['service' => $srv, 'module' => $mod]);
                         $ret = $service->handle($fd, $pkg);
                         if ($ret instanceof ResponsePackageInterface) {
                             $server->push($frame->fd, $this->encoder->encode($ret->all()));
@@ -148,6 +161,26 @@ class WebSocketServer implements ServerInterface
                 'wPid' => $server->getWorkerPid(),
             ]
         );
+    }
+
+    public function onTask(Server $server, $taskId, $reactorId, $data)
+    {
+        if (is_array($data) && isset($data['taskName']) && isset($data['msg'])) {
+            list('taskName' => $taskName, 'msg' => $msg) = $data;
+            if (isset($this->workerTasks[$taskName])) {
+                $task = $this->workerTasks[$taskName];
+                $this->log->info('handle on', ['task' => $taskName, 'taskId' => $taskId]);
+                $ret = $task->handle($server, $taskId, $reactorId, $msg);
+                if ($ret) {
+                    $server->finish($ret);
+                }
+            }
+        }
+    }
+
+    public function onFinish(Server $server, $taskId, $data)
+    {
+        $this->log->info('finish', ['taskId' => $taskId, 'data' => $data]);
     }
 
     public function onClose(Server $server, int $fd)
