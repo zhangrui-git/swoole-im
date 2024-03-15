@@ -118,10 +118,11 @@ class WebSocketServer implements ServerInterface
                 try {
                     $data = $this->decoder->decode($frame->data);
                     $pkg = new WebSocketRequest($data);
-                    $s = $pkg->getService();
-                    $m = $pkg->getModule();
-                    if (isset($this->services[$s][$m])) {
-                        $service = $this->services[$s][$m];
+                    $srv = $pkg->getService();
+                    $mod = $pkg->getModule();
+                    if (isset($this->services[$srv][$mod])) {
+                        $service = $this->services[$srv][$mod];
+                        $this->log->info('handle at', ['service' => $srv, 'module' => $mod]);
                         $ret = $service->handle($fd, $pkg);
                         if ($ret instanceof ResponsePackageInterface) {
                             $server->push($frame->fd, $this->encoder->encode($ret->all()));
