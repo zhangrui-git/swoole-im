@@ -5,5 +5,5 @@ COPY --from=composer /usr/bin/composer /usr/bin/composer
 EXPOSE 8080/tcp
 WORKDIR /app
 ADD . .
-RUN composer require
+RUN composer install
 ENTRYPOINT ["php", "im", "server"]
