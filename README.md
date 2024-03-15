@@ -16,12 +16,13 @@ FROM phpswoole/swoole:4.8-php7.4-alpine
 LABEL authors="Zhang Rui"
 COPY --from=composer /usr/bin/composer /usr/bin/composer
 EXPOSE 8080/tcp
-VOLUME /app
 WORKDIR /app
+ADD . .
+RUN composer require
 ENTRYPOINT ["php", "im", "server"]
 ```
 ```shell
-docker run -p 8080:8080 -v $project_dir:/app --name swoole-im swoole-im:0.0.1
+docker run -p 8080:8080 --name swoole-im swoole-im:0.0.1
 ```
 #### 3.连接服务器
 > 使用postman连接服务器 ws://127.0.0.1:8080
